@@ -37,6 +37,14 @@ class Command(BaseCommand):
             action='store_true',
             help='Test GitHub and Notion API connections'
         )
+        
+        parser.add_argument(
+            '--state',
+            type=str,
+            default='open',
+            choices=['open', 'closed', 'all'],
+            help='Issue state to sync (default: open)'
+        )
     
     def handle(self, *args, **options):
         automation_service = AutomationService()
@@ -63,16 +71,16 @@ class Command(BaseCommand):
                 return
             
             # Full sync
-            self.run_full_sync(automation_service, options['sync_type'])
+            self.run_full_sync(automation_service, options['sync_type'], options['state'])
             
         except Exception as e:
             raise CommandError(f'Sync failed: {e}')
     
-    def run_full_sync(self, automation_service, sync_type):
+    def run_full_sync(self, automation_service, sync_type, state):
         """Run full sync of all assigned issues"""
-        self.stdout.write(f'Starting {sync_type} sync of assigned GitHub issues...')
+        self.stdout.write(f'Starting {sync_type} sync of {state} assigned GitHub issues...')
         
-        sync_result = automation_service.sync_assigned_issues(sync_type)
+        sync_result = automation_service.sync_assigned_issues(sync_type, state)
         
         if sync_result.status == 'completed':
             self.stdout.write(

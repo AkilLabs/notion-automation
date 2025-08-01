@@ -36,12 +36,12 @@ class GitHubService:
             logger.error(f"GitHub API request failed: {e}")
             raise
     
-    def get_assigned_issues(self, state: str = "all", per_page: int = 100) -> List[Dict]:
+    def get_assigned_issues(self, state: str = "open", per_page: int = 100) -> List[Dict]:
         """
         Fetch all issues assigned to the authenticated user
         
         Args:
-            state: Issue state ('open', 'closed', 'all')
+            state: Issue state ('open', 'closed', 'all') - defaults to 'open'
             per_page: Number of issues per page (max 100)
         
         Returns:
