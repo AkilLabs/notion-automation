@@ -21,6 +21,12 @@ class SyncResult:
         self.error_messages = []
         self.status = 'running'
     
+    @property
+    def duration(self):
+        """Calculate sync duration"""
+        end_time = self.completed_at or datetime.now()
+        return end_time - self.started_at
+    
     def mark_completed(self):
         self.status = 'completed'
         self.completed_at = datetime.now()
@@ -43,23 +49,24 @@ class AutomationService:
         self.github_service = GitHubService()
         self.notion_service = NotionService()
     
-    def sync_assigned_issues(self, sync_type: str = 'manual') -> SyncResult:
+    def sync_assigned_issues(self, sync_type: str = 'manual', state: str = 'open') -> SyncResult:
         """
         Main method to sync all assigned GitHub issues directly to Notion
         
         Args:
             sync_type: Type of sync ('manual', 'scheduled', 'webhook')
+            state: Issue state to sync ('open', 'closed', 'all')
         
         Returns:
             SyncResult instance with sync results
         """
         # Create sync result tracker
         sync_result = SyncResult(sync_type)
-        logger.info(f"Starting {sync_type} sync")
+        logger.info(f"Starting {sync_type} sync for {state} issues")
         
         try:
-            # Fetch assigned issues from GitHub
-            github_issues = self.github_service.get_assigned_issues()
+            # Fetch assigned issues from GitHub (only open issues by default)
+            github_issues = self.github_service.get_assigned_issues(state=state)
             sync_result.issues_processed = len(github_issues)
             
             logger.info(f"Processing {len(github_issues)} GitHub issues")
